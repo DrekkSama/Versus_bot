@@ -2,6 +2,9 @@ from typing import Optional
 
 from ares import AresBot
 
+from sc2.ids.unit_typeid import UnitTypeId
+from sc2.ids.ability_id import AbilityId
+
 
 class MyBot(AresBot):
     def __init__(self, game_step_override: Optional[int] = None):
@@ -17,6 +20,11 @@ class MyBot(AresBot):
 
     async def on_step(self, iteration: int) -> None:
         await super(MyBot, self).on_step(iteration)
+        
+        #get marines to Attack towards the enemy start location
+        for marine in self.units(UnitTypeId.MARINE).idle:
+            target = self.enemy_start_locations[0]
+            marine(AbilityId.ATTACK, target)
 
         # step logic here ...
         pass
