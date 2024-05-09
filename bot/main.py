@@ -1,64 +1,44 @@
 from typing import Optional
 
 from ares import AresBot
+from ares.behaviors.combat import CombatManeuver
+from ares.behaviors.combat.individual import StutterUnitBack
+from cython_extensions import cy_closest_to, cy_distance_to
+
+
 
 from sc2.ids.unit_typeid import UnitTypeId
 from sc2.ids.ability_id import AbilityId
+from sc2.unit import Unit
+from sc2.position import Point2
+from sc2.units import Units
+
 
 
 class MyBot(AresBot):
     def __init__(self, game_step_override: Optional[int] = None):
-        """Initiate custom bot
-
-        Parameters
-        ----------
-        game_step_override :
-            If provided, set the game_step to this value regardless of how it was
-            specified elsewhere
-        """
+        
         super().__init__(game_step_override)
 
     async def on_step(self, iteration: int) -> None:
         await super(MyBot, self).on_step(iteration)
         
+        enemy_units = self.enemy_units
         #get marines to Attack towards the enemy start location
         for marine in self.units(UnitTypeId.MARINE).idle:
-            target = self.enemy_start_locations[0]
-            marine(AbilityId.ATTACK, target)
+            harrass_maneuvers = CombatManeuver()
 
-        # step logic here ...
-        pass
+            if enemy_units:
 
-    """
-    Can use `python-sc2` hooks as usual, but make a call the inherited method in the superclass
-    Examples:
-    """
-    # async def on_start(self) -> None:
-    #     await super(MyBot, self).on_start()
-    #
-    #     # on_start logic here ...
-    #
-    # async def on_end(self, game_result: Result) -> None:
-    #     await super(MyBot, self).on_end(game_result)
-    #
-    #     # custom on_end logic here ...
-    #
-    # async def on_building_construction_complete(self, unit: Unit) -> None:
-    #     await super(MyBot, self).on_building_construction_complete(unit)
-    #
-    #     # custom on_building_construction_complete logic here ...
-    #
-    # async def on_unit_created(self, unit: Unit) -> None:
-    #     await super(MyBot, self).on_unit_created(unit)
-    #
-    #     # custom on_unit_created logic here ...
-    #
-    # async def on_unit_destroyed(self, unit_tag: int) -> None:
-    #     await super(MyBot, self).on_unit_destroyed(unit_tag)
-    #
-    #     # custom on_unit_destroyed logic here ...
-    #
-    # async def on_unit_took_damage(self, unit: Unit, amount_damage_taken: float) -> None:
-    #     await super(MyBot, self).on_unit_took_damage(unit, amount_damage_taken)
-    #
-    #     # custom on_unit_took_damage logic here ...
+                closest_enemy: Unit = cy_closest_to(marine.position, enemy_units)
+                target = self.enemy_start_locations[0] 
+                
+                harrass_maneuvers.add(StutterUnitBack
+                                      (marine, 
+                                       closest_enemy, 
+                                       kite_via_pathing=True))
+                
+                self.register_behavior(harrass_maneuvers) 
+                
+      
+        
