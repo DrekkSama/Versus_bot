@@ -7,7 +7,7 @@ MyBotName: versus_bot
 MyBotRace: Zerg
 # Which opening to run from zerg_builds.yml (Zerg profile only).
 # Available: TwelvePoolRush, EightPoolRush
-MyBotBuild: EightPoolRush
+MyBotBuild: TwelvePoolRush
 ########################
 
 UseData: False
