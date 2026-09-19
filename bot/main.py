@@ -15,6 +15,7 @@ from sc2.position import Point2
 from sc2.units import Units
 
 from bot.zerg_rush import ZergRush
+from managers.queen_manager import QueenManager
 
 from loguru import logger
 
@@ -52,6 +53,7 @@ class MyBot(AresBot):
         
         super().__init__(game_step_override)
         self.zerg_rush: Optional[ZergRush] = None
+        self.queen_manager: Optional[QueenManager] = None
 
     async def on_start(self) -> None:
         await super().on_start()
@@ -60,9 +62,22 @@ class MyBot(AresBot):
         # (TwelvePoolRush / EightPoolRush from zerg_builds.yml)
         if self.race == Race.Zerg:
             self.zerg_rush = ZergRush(self)
+            self.queen_manager = QueenManager(self)
             chosen_build: Optional[str] = self.config.get(MY_BOT_BUILD)
             if chosen_build:
                 self.build_order_runner.switch_opening(chosen_build)
+
+    async def on_unit_created(self, unit: Unit) -> None:
+        await super().on_unit_created(unit)
+
+        # route new queens into the QueenManager role system
+        # (defaults to QUEEN_CREEP, see managers/queen_manager.py)
+        if (
+            self.race == Race.Zerg
+            and self.queen_manager is not None
+            and unit.type_id == UnitTypeId.QUEEN
+        ):
+            self.queen_manager.assign_new_queen(unit)
 
     async def on_step(self, iteration: int) -> None:
         await super(MyBot, self).on_step(iteration)
@@ -73,6 +88,8 @@ class MyBot(AresBot):
         if self.race == Race.Zerg:
             if self.zerg_rush is not None:
                 self.zerg_rush.step()
+            if self.queen_manager is not None:
+                self.queen_manager.update()
             return
 
         enemy_units = self.enemy_units

@@ -4,7 +4,9 @@ Handles the parts of the rush that the ares build runner can't express in
 `zerg_builds.yml`:
 
 - worker mining, with speedmining (mineral boosting) explicitly disabled
-- the all-in attack once the opening build completes
+- the rush attack: Zerglings stream at the enemy the moment they hatch,
+  regardless of build progress
+- continuous Zergling production + Overlords once the opening completes
 
 The opening itself (Spawning Pool, Overlords, Zerglings, natural Hatchery,
 Queen) is run by ares' build runner from `zerg_builds.yml`; the opening to use
@@ -13,7 +15,7 @@ is forced via the `MyBotBuild` key in `config.yml` (see `bot/main.py`).
 
 from typing import TYPE_CHECKING
 
-from ares.behaviors.macro import Mining
+from ares.behaviors.macro import AutoSupply, Mining, SpawnController
 from sc2.ids.unit_typeid import UnitTypeId
 from sc2.position import Point2
 from sc2.unit import Unit
@@ -24,6 +26,12 @@ if TYPE_CHECKING:
 #: how often (game seconds) the all-in attack order is re-issued so that
 #: newly spawned Zerglings join the wave
 ATTACK_REISSUE_INTERVAL: float = 2.0
+
+#: army composition used for continuous post-opening production:
+#: freeflow Zerglings only (proportions ignored, everything spent on lings)
+_ZERGLING_ONLY_COMP: dict = {
+    UnitTypeId.ZERGLING: {"proportion": 1.0, "priority": 0},
+}
 
 
 class ZergRush:
@@ -43,27 +51,37 @@ class ZergRush:
         # in the Mining behavior, so explicitly turn it off
         self.ai.register_behavior(Mining(mineral_boost=False))
 
-        # opening still running: ares' build runner handles everything
+        # rush attack runs regardless of build progress: idle Zerglings
+        # stream at the enemy the moment they hatch
+        self._all_in_attack()
+
+        # once the opening completes, take over production: keep supply up
+        # and keep making lings. (During the opening the build runner needs
+        # the larvae for its remaining steps, so production stays with it.)
         if not self.ai.build_order_runner.build_completed:
             return
 
-        # opening done: send the finished wave at the enemy
-        self._all_in_attack()
+        # AutoSupply is registered first so Overlords get larva priority
+        # when supply-blocked (lings would otherwise eat every larva).
+        self.ai.register_behavior(AutoSupply(self.ai.start_location))
+        self.ai.register_behavior(
+            SpawnController(_ZERGLING_ONLY_COMP, freeflow_mode=True)
+        )
 
     def _all_in_attack(self) -> None:
-        """Attack-move the whole rush army at the rush target.
+        """Attack-move idle Zerglings at the rush target.
 
-        Orders are re-issued every `ATTACK_REISSUE_INTERVAL` game seconds so
-        Zerglings that spawn after the opening completes join the all-in.
+        Runs every step from the start of the game so the rush jumps out
+        immediately — but only idle lings are ordered, so Zerglings that are
+        already fighting are never interrupted. Queens are deliberately
+        excluded: they stay home for injects, creep spread and base defense
+        (see `managers/queen_manager.py`).
         """
         ai: "AresBot" = self.ai
         if ai.time - self._last_attack_time < ATTACK_REISSUE_INTERVAL:
             return
 
-        attackers: list[Unit] = [
-            *ai.units(UnitTypeId.ZERGLING).ready,
-            *ai.units(UnitTypeId.QUEEN).ready,
-        ]
+        attackers: list[Unit] = [*ai.units(UnitTypeId.ZERGLING).ready.idle]
         if not attackers:
             return
 
