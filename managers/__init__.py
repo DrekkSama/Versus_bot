@@ -1,0 +1,1 @@
+"""versus_bot custom managers."""
