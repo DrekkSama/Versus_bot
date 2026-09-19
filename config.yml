@@ -3,8 +3,11 @@
 # Can add own unique config options here if desired
 
 # Custom values not used by ares
-MyBotName: TestBot
-MyBotRace: Terran
+MyBotName: versus_bot
+MyBotRace: Zerg
+# Which opening to run from zerg_builds.yml (Zerg profile only).
+# Available: TwelvePoolRush, EightPoolRush
+MyBotBuild: TwelvePoolRush
 ########################
 
 UseData: False

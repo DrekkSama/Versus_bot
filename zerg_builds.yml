@@ -1,0 +1,75 @@
+# Zerg opponent profile for versus_bot.
+#
+# This file is auto-loaded by ares when `MyBotRace: Zerg` in `config.yml`.
+# Which opening is run is decided by `MyBotBuild` in `config.yml` (see
+# `MyBot.on_start` in `bot/main.py`), so ares' own selection below is inert.
+#
+# Build order syntax reference:
+# https://github.com/AresSC2/ares-sc2/blob/main/docs/tutorials/build_runner.md
+
+# Save the game opening and result to disk?
+UseData: False
+# How should we choose a build? Cycle switches on defeat, WinrateBased uses
+# winrates. Unused here since `MyBotBuild` in config.yml forces the opening.
+BuildSelection: Cycle
+
+# Kept minimal to satisfy the build runner structure: the opening is forced
+# via the `MyBotBuild` key in `config.yml`.
+BuildChoices:
+    Protoss:
+        BotName: versus_bot
+        Cycle:
+            - TwelvePoolRush
+    Random:
+        BotName: versus_bot
+        Cycle:
+            - TwelvePoolRush
+    Terran:
+        BotName: versus_bot
+        Cycle:
+            - TwelvePoolRush
+    Zerg:
+        BotName: versus_bot
+        Cycle:
+            - TwelvePoolRush
+
+Builds:
+    # 12 Pool rush, pre-5.0.16 (12 starting workers).
+    # Ported from `reference/Zerg_Test_Bot.py`:
+    #   12  Spawning Pool
+    #   14  Overlord / drones to 14
+    #   14  Zergling x3 (wave streams as larvae allow)
+    #   16  Hatchery (natural)
+    #   18  Queen
+    #   21  Overlord (reference morphs Overlords when supply blocked)
+    #   20  Zergling x2  -> all-in once the build completes
+    TwelvePoolRush:
+        ConstantWorkerProductionTill: 14
+        ShouldHandleGasSteal: False
+        OpeningBuildOrder:
+            - 12 spawningpool
+            - 14 supply
+            - 14 zergling x3
+            - 16 expand
+            - 18 queen
+            - 21 supply
+            - 20 zergling x2
+
+    # 8 Pool rush, patch 5.0.16 (8 starting workers). Same build as the 12
+    # Pool shifted 4 supply down:
+    #   8   Spawning Pool
+    #   10  Overlord / drones to 10
+    #   10  Zergling x3
+    #   12  Hatchery (natural)
+    #   14  Queen
+    #   16  Zergling x2  -> all-in once the build completes
+    EightPoolRush:
+        ConstantWorkerProductionTill: 10
+        ShouldHandleGasSteal: False
+        OpeningBuildOrder:
+            - 8 spawningpool
+            - 10 supply
+            - 10 zergling x3
+            - 12 expand
+            - 14 queen
+            - 16 zergling x2

@@ -80,7 +80,31 @@ poetry run python run.py
 If everything has worked thus far, open up `bot/main.py` and delve into the excitement of bot development!
 
 An `ares-sc2` bot is a [python-sc2](https://github.com/BurnySc2/python-sc2) bot by default, meaning any examples or documentation from that repository equally relevant here.
+---
 
+# Opponent Profiles
+
+`versus_bot` is a **competitor bot** meant as a controlled opponent for testing your own bots against. The active profile is selected by race via `config.yml`, and each race's openings live in an ares build-runner file (`zerg_builds.yml`, `terran_builds.yml`, ...).
+
+## Zerg Profile (`MyBotRace: Zerg`)
+
+A faithful port of the Zerg rush opponent from `reference/Zerg_Test_Bot.py`, driven by ares' [build runner](https://github.com/AresSC2/ares-sc2/blob/main/docs/tutorials/build_runner.md):
+
+- **`MyBotBuild`** in `config.yml` selects the opening from `zerg_builds.yml`:
+  - **`TwelvePoolRush`** — 12 Pool all-in (pre-5.0.16). Pool at 12, drones to 14, Overlord at 14, lings stream from the pool, natural Hatchery at 16, Queen at 18, attack wave at 20.
+  - **`EightPoolRush`** — same rush shifted 4 supply down for patch 5.0.16 (8 starting workers). Pool at 8, drones to 10, expand at 12, Queen at 14.
+- The opening is executed automatically by ares' build runner (`AresBot.on_step` runs it every step). `bot/main.py` only forces the chosen opening in `on_start` via `switch_opening`.
+- Once the opening completes, `bot/zerg_rush.py` sends everything (Zerglings + Queen) in an all-in: closest known enemy structure → enemy start location → map center. Orders re-issue every ~2 game seconds so newly spawned lings join the wave.
+- Worker speedmining (mineral boosting) is **disabled** (`Mining(mineral_boost=False)`).
+
+### Adding a new Zerg opening
+
+1. Add the build under `Builds:` in `zerg_builds.yml` (syntax: `- 14 zergling x3`, `- 16 expand`, `- 18 queen`, ...).
+2. Point `MyBotBuild` in `config.yml` at the new name.
+
+Other race profiles (Terran marine behavior lives in `bot/main.py` currently) follow the same pattern: a `<race>_builds.yml` file plus a branch in `MyBot.on_step`.
+
+---
 ### Uploading to [AiArena](https://www.sc2ai.com/)
 
 Included in the repository is a convenient script named `scripts/create_ladder_zip.py`. However, it is important to note that the AIarena ladder infrastructure operates specifically on Linux-based systems. Due to the dependency of ares-sc2 on cython, it is necessary to execute this script on a Linux environment in order to generate Linux binaries.
