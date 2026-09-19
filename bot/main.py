@@ -16,6 +16,34 @@ from sc2.units import Units
 
 from bot.zerg_rush import ZergRush
 
+from loguru import logger
+
+
+# ── Patch 5.0.16 compatibility shim ─────────────────────────────────────────
+# New AIE maps emit units unknown to the installed python-sc2 enum
+# (e.g. XelNagaTowerRangeIndicatorDummy == 2046). Unit.type_id does a strict
+# UnitTypeId(value) lookup and raises, crashing _prepare_units before on_start.
+# Fall back to NOTAUNIT for any unknown id so these dummy props are skipped
+# instead of killing the bot.
+_enum_lookup_cache: dict[int, UnitTypeId] = {}
+
+
+def _safe_type_id(self: Unit) -> UnitTypeId:
+    unit_type: int = self._proto.unit_type
+    if unit_type in UnitTypeId._value2member_map_:
+        return UnitTypeId(unit_type)
+    if unit_type not in _enum_lookup_cache:
+        logger.warning(
+            f"Unknown unit type id {unit_type} "
+            f"(patch-added dummy?), treating as NOTAUNIT"
+        )
+        _enum_lookup_cache[unit_type] = UnitTypeId.NOTAUNIT
+    return _enum_lookup_cache[unit_type]
+
+
+Unit.type_id = property(_safe_type_id)
+
+
 MY_BOT_BUILD: str = "MyBotBuild"
 
 
