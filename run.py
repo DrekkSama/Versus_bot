@@ -68,8 +68,8 @@ def main():
     else:
         # Local game
         map_list: List[str] = [
-             "PlateauMicro_1",
-             "BotMicroArena_6",
+             "UltraloveAIE_v2",
+             #"UltraloveAIE_5.0.16_v2",
         ]
 
         random_race = random.choice([Race.Zerg, Race.Terran, Race.Protoss])
