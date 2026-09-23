@@ -1,1 +1,1 @@
-"""versus_bot custom managers."""
+"""Blitzling custom managers."""

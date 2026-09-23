@@ -1,4 +1,4 @@
-# Zerg opponent profile for versus_bot.
+# Zerg opponent profile for Blitzling.
 #
 # This file is auto-loaded by ares when `MyBotRace: Zerg` in `config.yml`.
 # Which opening is run is decided by `MyBotBuild` in `config.yml` (see
@@ -17,19 +17,19 @@ BuildSelection: Cycle
 # via the `MyBotBuild` key in `config.yml`.
 BuildChoices:
     Protoss:
-        BotName: versus_bot
+        BotName: Blitzling
         Cycle:
             - TwelvePoolRush
     Random:
-        BotName: versus_bot
+        BotName: Blitzling
         Cycle:
             - TwelvePoolRush
     Terran:
-        BotName: versus_bot
+        BotName: Blitzling
         Cycle:
             - TwelvePoolRush
     Zerg:
-        BotName: versus_bot
+        BotName: Blitzling
         Cycle:
             - TwelvePoolRush
 

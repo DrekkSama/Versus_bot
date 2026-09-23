@@ -84,7 +84,7 @@ An `ares-sc2` bot is a [python-sc2](https://github.com/BurnySc2/python-sc2) 
 
 # Opponent Profiles
 
-`versus_bot` is a **competitor bot** meant as a controlled opponent for testing your own bots against. The active profile is selected by race via `config.yml`, and each race's openings live in an ares build-runner file (`zerg_builds.yml`, `terran_builds.yml`, ...).
+`Blitzling` is a **competitor bot** meant as a controlled opponent for testing your own bots against. The active profile is selected by race via `config.yml`, and each race's openings live in an ares build-runner file (`zerg_builds.yml`, `terran_builds.yml`, ...).
 
 ## Zerg Profile (`MyBotRace: Zerg`)
 
